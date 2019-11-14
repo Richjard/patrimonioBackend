@@ -1,0 +1,28 @@
+/node_modules
+/public/hot
+/public/storage
+/public/modulos
+/storage/*.key
+/vendor
+.env
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+\.idea/
+endpoint.http
+
+<<<<<<< HEAD
+*.rar
+
+<<<<<<< HEAD
+# IDE - VSCode
+.vscode/
+=======
+app/Http/Controllers/Tre/Report/tre_ingresos_reportDIController.php
+=======
+*.rar
+>>>>>>> ModCaja
+>>>>>>> master
