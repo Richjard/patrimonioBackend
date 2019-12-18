@@ -113,20 +113,31 @@ Route::group(['middleware' => 'api','prefix' => 'pat'],function($router){//$skip
 
 
          Route::post('planes/result', 'Patrimonio\Planes@getResult');
-         Route::post('planes/combo', 'Patrimonio\Planes@getCombo');
+         Route::get('planes/combo', 'Patrimonio\Planes@getCombo');
          Route::post('planes', 'Patrimonio\Planes@guardar');
          Route::put('planes/{id}', 'Patrimonio\Planes@modificar');
          Route::delete('planes/{id}', 'Patrimonio\Planes@eliminar');   
 
+        // Route::post('subcuenta/result', 'Patrimonio\Planes@getResult');
+         Route::get('subcuenta/combo', 'Patrimonio\SubCuenta@getCombo');
+      //   Route::post('subcuenta', 'Patrimonio\Planes@guardar');
+        // Route::put('subcuenta/{id}', 'Patrimonio\Planes@modificar');
+       //  Route::delete('subcuenta/{id}', 'Patrimonio\Planes@eliminar');   
 
 
-        Route::post('bienes/result', 'Patrimonio\Bienes@getResult');
+         Route::post('bienes/result', 'Patrimonio\Bienes@getResult');
          Route::post('bienes/combo', 'Patrimonio\Bienes@getCombo');
          Route::post('bienes', 'Patrimonio\Bienes@guardar');
          Route::put('bienes/{id}', 'Patrimonio\Bienes@modificar');
-         Route::delete('bienes/{id}', 'Patrimonio\Bienes@eliminar');  
+         Route::delete('bienes/{id}', 'Patrimonio\Bienes@eliminar');
+         Route::put('bienes/baja/{id}', 'Patrimonio\Bienes@baja');  
 
-      
+         Route::post('situacion/combo', 'Patrimonio\SituacionBien@getCombo');
+         Route::post('situacion', 'Patrimonio\SituacionBien@guardar');   
+
+
+
+
          Route::post('formas_adquisicion/combo', 'Patrimonio\Formas_adquisicion@getCombo'); 
 
          Route::post('estados_bien/combo', 'Patrimonio\Estados_bien@getCombo'); 
@@ -139,9 +150,10 @@ Route::group(['middleware' => 'api','prefix' => 'pat'],function($router){//$skip
          Route::post('documentos_tramite/result', 'Patrimonio\DocumentosTramite@getResult');
          Route::post('oc/result', 'Patrimonio\Oc@getResult');
          Route::post('oc_item/result', 'Patrimonio\OcItem@getResult');
+         Route::get('oc_item/comboCuentas/{_anio}/{clasificador}/{GRUPO_BIEN}/{CLASE_BIEN}/{FAMILIA_BIEN}', 'Patrimonio\OcItem@comboCuentas');
 
          Route::post('cargos/combo', 'Patrimonio\Cargos@getCombo');
-         Route::post('anios/combo', 'Patrimonio\Anios@getCombo');
+         Route::get('anios/combo', 'Patrimonio\Anios@getCombo');
 
          Route::post('empleados/result', 'Patrimonio\Empleado@getResult');
          Route::post('empleados/combo', 'Patrimonio\Empleado@getCombo');
@@ -178,6 +190,10 @@ Route::group(['middleware' => 'api','prefix' => 'pat'],function($router){//$skip
          Route::post('desplazamiento', 'Patrimonio\DesplazamientoBienes@guardar');
          Route::put('desplazamiento/{id}', 'Patrimonio\DesplazamientoBienes@modificar');
          Route::delete('desplazamiento/{id}', 'Patrimonio\DesplazamientoBienes@eliminar');
+
+        Route::post('desplazamiento/dataAsignacionBienes/{iDocAdqId}', 'Patrimonio\DesplazamientoBienes@dataAsignacionBienes');
+        Route::get('desplazamiento/getResultRow/{iDocAdqId}', 'Patrimonio\DesplazamientoBienes@getResultRow');
+
 
 
 
@@ -222,6 +238,22 @@ Route::group(['middleware' => 'api','prefix' => 'pat'],function($router){//$skip
 
 
          Route::post('verificar/result', 'Patrimonio\Verificar@getResult');
+    /*********/
+    
+    Route::post('reportes/ubicacionPorDependencia/{iDepenId}', 'Patrimonio\Reportes@ubicacionPorDependencia');
+    Route::post('reportes/ubicacionPorDepenSub/{iDepenId}/{iCentroCostoId}', 'Patrimonio\Reportes@ubicacionPorDepenSub');
+    Route::get('reportes/ubicacionPorDepenSubEmp/{idCentroCostoEmpleado}   ', 'Patrimonio\Reportes@ubicacionPorDepenSubEmp');
+    Route::post('reportes/getDataComboubicacionEmpleado/{iDepenId}/{iCentroCostoId}', 'Patrimonio\Reportes@getDataComboubicacionEmpleado');
+	Route::get('reportes/ubicacionEmpleado', 'Patrimonio\Reportes@ubicacionEmpleado');
+	Route::get('reportes/getDataCentroCosto/{iEmpleadoId}', 'Patrimonio\Reportes@getDataCentroCosto');
+    Route::get('reportes/getBienNoDepreciable', 'Patrimonio\Reportes@getBienNoDepreciable');
+    Route::get('reportes/getComboCuentaContable', 'Patrimonio\Reportes@getComboCuentaContable');
+    Route::get('reportes/getComboCuentaMayor', 'Patrimonio\Reportes@getComboCuentaMayor');
+    Route::get('reportes/getBienCuentaMayor/{iCuentaContable}', 'Patrimonio\Reportes@getBienCuentaMayor');
+
+
+    /**********/
+
 
        //  Route::patch('calendarioacademico/{id}', 'Api\Ura\CalendarioAcademicoController@update')->name('api.calendario.update');
 

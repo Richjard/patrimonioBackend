@@ -131,6 +131,101 @@ class DesplazamientoBienes extends Controller
        // return response()->"{\"result\":" .json($respuesta). ",\"count\":".$total."}";
     }
 
+     public function getResultRow($iDespBienId){
+
+           
+        // $datos = \DB::connection('sqlsrvSiga')->select("EXEC pat.Sp_SEL_Documento ?,?,?,?",array( $skip,$top,$value_filtro_cDocAdqNro,$order));
+          $datos_desplazamiento = \DB::select("EXEC pat.Sp_SEL_DesplazamientoBienes_Row ?",array( $iDespBienId));
+
+
+
+          $datos_desplazamientoData=array();
+          if($datos_desplazamiento){
+
+         
+          $datos_b= \DB::select("EXEC pat.Sp_SEL_DesplazamientoBienesDetalle ?",array( $datos_desplazamiento[0]->iDespBienId));
+         //  $datos_c=null;
+
+          $datos_bienes= [];  
+          //  array_push($pila, "manzana", "arándano");
+             if($datos_b){
+              foreach ($datos_b as $dd) {  
+                   $datos_bienes_colores= [];  
+                  $datos_colores= \DB::select("EXEC pat.Sp_SEL_Bien_color ?",array( $dd->iBienId));
+                 //  $datos_c=null;
+
+                   $datos_c = array();
+                  //  array_push($pila, "manzana", "arándano");
+                     if($datos_colores){
+                      foreach ($datos_colores as $dc) {                 
+                          $datos_bienes_colores[]=array(    
+                              
+                               'iColorId'=>$dc->iColorId, 
+                               'cColorCodigoHex'=>$dc->cColorCodigoHex,
+                                'cColorNombre'=>$dc->cColorNombre,                                     
+                          );
+                      }
+                     }
+                  $datos_bienes[]=array(    
+                      'RowNumber'=>$dd->RowNumber,
+                       'iDespBienDetID'=>$dd->iDespBienDetID, 
+                       'cDespBienDetObs'=>$dd->cDespBienDetObs, 
+                       'bDespBienDetUltimoDesp'=>$dd->bDespBienDetUltimoDesp, 
+                       'iDespBienId'=>$dd->iDespBienId, 
+                       'iEstadoBienId'=>$dd->iEstadoBienId,                     
+                       'iEstadoBienId'=>$dd->iEstadoBienId, 
+                       'cBienCodigo'=>$dd->cBienCodigo, 
+                       'cBienDescripcion'=>$dd->cBienDescripcion, 
+                       'cBienSerie'=>$dd->cBienSerie, 
+                       'cBienDimension'=>$dd->cBienDimension, 
+                       'cTipoDescripcion'=>$dd->cTipoDescripcion, 
+                       'cModeloDescripcion'=>$dd->cModeloDescripcion, 
+                       'cMarcaDescripcion'=>$dd->cMarcaDescripcion, 
+                       'cEstadoBienAbre'=>$dd->cEstadoBienAbre, 
+                        'colores'=>$datos_bienes_colores  
+                                 
+                  );
+              }
+             
+            }
+
+              $datos_desplazamientoData[]=array(    
+                    'RowNumber'=>$datos_desplazamiento[0]->RowNumber,
+
+                     'iDespBienId'=>$datos_desplazamiento[0]->iDespBienId, 
+                     'dDespBienFecha'=>$datos_desplazamiento[0]->dDespBienFecha, 
+                     'cDespBienDocRef'=>$datos_desplazamiento[0]->cDespBienDocRef, 
+                     'iTipoDespId'=>$datos_desplazamiento[0]->iTipoDespId, 
+                     'idCentroCostoEmpleado'=>$datos_desplazamiento[0]->idCentroCostoEmpleado,                     
+                     'iYearId'=>$datos_desplazamiento[0]->iYearId, 
+                     'cTipoDespDescripcion'=>$datos_desplazamiento[0]->cTipoDespDescripcion, 
+                     'cDepenNombre'=>$datos_desplazamiento[0]->cDepenNombre, 
+                     'empleado'=>$datos_desplazamiento[0]->empleado, 
+                     'cCargNombrsse'=>$datos_desplazamiento[0]->cCargNombre, 
+                     'cCentroCostoNombre'=>$datos_desplazamiento[0]->cCentroCostoNombre, 
+                     'bienes'=> $datos_bienes ,
+                     'cDepenNombreO'=>$datos_desplazamiento[0]->cDepenNombreO, 
+                     'cEmpleadoO'=>$datos_desplazamiento[0]->empleadoO  
+                           
+                );
+           }
+         
+
+     // print_r($datos)
+         // $total=45;
+         // $total=\DB::select("EXEC pat.Sp_COUNT_DesplazamientoBienes ?",array($value_filtro_cDocAdqNro));
+          $data = [       
+                                 
+                    'results' =>$datos_desplazamientoData,
+                    
+                                             
+                  ];
+
+       return response()->json($data);
+        //  return $data;
+       // return response()->"{\"result\":" .json($respuesta). ",\"count\":".$total."}";
+    }
+
      public function getCombo(){
        // $respuesta = DB::select('EXECUTE tram.Sp_SEL_CiclosAcademicosMatricXcEstudCodUniv ?', $data);
          $datos = \DB::select("EXEC pat.Sp_SEL_Combo_Grupo_generico");
@@ -144,7 +239,20 @@ class DesplazamientoBienes extends Controller
        // return response()->"{\"result\":" .json($respuesta). ",\"count\":".$total."}";
     }
 
- 
+
+
+  public function dataAsignacionBienes(Request $reques, $iDocAdqId ){
+       // $respuesta = DB::select('EXECUTE tram.Sp_SEL_CiclosAcademicosMatricXcEstudCodUniv ?', $data);
+         $datos = \DB::select("EXEC pat.Sp_SEL_Bien_X_Doc_Adq ?",array($iDocAdqId));
+  
+          $data = [         
+                    'results' =>$datos                                             
+                  ];
+
+       return response()->json($datos);
+        //  return $data;
+       // return response()->"{\"result\":" .json($respuesta). ",\"count\":".$total."}";
+    }
 
 
     public function guardar(Request $request)
@@ -200,8 +308,8 @@ class DesplazamientoBienes extends Controller
 
         $ip = $request->server->get('REMOTE_ADDR');
         try {
-            $queryResult = \DB::select("exec [pat].[Sp_INS_DesplazamientoBienes] ?,?,?,?,?,?,?,? ",array($request->dDespBienFecha,$request->cDespBienDocRef,$request->iTipoDespId,$request->idCentroCostoEmpleado
-              ,$request->iYearId,$xml,$request->idCentroCostoEmpleadoOrigen,20648) );   
+            $queryResult = \DB::select("exec [pat].[Sp_INS_DesplazamientoBienes] ?,?,?,?,?,?,?,?,? ",array($request->dDespBienFecha,$request->cDespBienDocRef,$request->iTipoDespId,$request->idCentroCostoEmpleado
+              ,$request->iYearId,$xml,$request->idCentroCostoEmpleadoOrigen,$request->asignacion,20648) );   
             $response = ['validated' => true, 'mensaje' => 'Se guardó  : '. $queryResult[0]->iDespBienId.', exitosamente.', 'queryResult' => $queryResult[0] ];
             $codeResponse = 200;            
         } catch (\QueryException $e) {;

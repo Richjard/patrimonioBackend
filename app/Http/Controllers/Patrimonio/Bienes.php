@@ -17,21 +17,6 @@ class Bienes extends Controller
 
     //public function getResult($skip,$top,$inlinecount,$format){
      public function getResult(Request $request){
-
-      /*require APPPATH .'vendor/autoload.php';
-                    # 4 generadores
-      use Picqer\Barcode\BarcodeGeneratorHTML;
-      use Picqer\Barcode\BarcodeGeneratorPNG;
-      use Picqer\Barcode\BarcodeGeneratorJPG;
-      use Picqer\Barcode\BarcodeGeneratorSVG;
-      $generador = new BarcodeGeneratorPNG();           
-      $tipo = $generador::TYPE_CODE_128;
-
-      $texto = "richard";
-      $imagen = $generador->getBarcode($texto, $tipo);
-          
-      $base64 = chunk_split(base64_encode($imagen));*/
-
       $generator = new \Picqer\Barcode\BarcodeGeneratorJPG();
 
      // 'data:image/png;base64,etiqueta'
@@ -39,11 +24,16 @@ class Bienes extends Controller
 
           $skip=$request->skip;
           $top=$request->top;
+          $baja=$request->baja;
+          $iSituacionBienId=$request->iSituacionBienId;
           $order=$request->order;
           $value_filtro_cBienDescripcion="";
           $value_filtro_cBienCodigo="";
           $value_filtro_cDocAdqNro="";
           $order="";
+          $anio=$request->anio;
+          $intAnio = (int)$anio;
+          $anio=$intAnio-1;
           if($request->order){$order=$request->order;}
           if($request->filter){                    
             for($i=0;$i<count($request->filter[0]['predicates']);$i++){    
@@ -62,8 +52,16 @@ class Bienes extends Controller
 
           }
           $datos_bienes = null;  
-         $datos = \DB::select("EXEC pat.Sp_SEL_Bien ?,?,?,?,?,?",array( $skip,$top,$value_filtro_cBienDescripcion,$value_filtro_cBienCodigo,$value_filtro_cDocAdqNro,$order));//obtencion de datos
-         $total=\DB::select("EXEC pat.Sp_COUNT_Bien ?,?,?",array($value_filtro_cBienDescripcion,$value_filtro_cBienCodigo,$value_filtro_cDocAdqNro));//obtencion de total
+          if($baja==0){
+            $datos = \DB::select("EXEC pat.Sp_SEL_BienPorSituacion ?,?,?,?,?,?,?,?",array( $skip,$top,$anio,$iSituacionBienId,$value_filtro_cBienDescripcion,$value_filtro_cBienCodigo,$value_filtro_cDocAdqNro,$order));//obtencion de datos
+            $total=\DB::select("EXEC pat.Sp_COUNT_BienPorSituacion ?,?,?,?",array($iSituacionBienId,$value_filtro_cBienDescripcion,$value_filtro_cBienCodigo,$value_filtro_cDocAdqNro));//obtencion de total
+          }else{
+            $datos = \DB::select("EXEC pat.Sp_SEL_BienBaja ?,?,?,?,?,?,?",array( $skip,$top,$anio,$value_filtro_cBienDescripcion,$value_filtro_cBienCodigo,$value_filtro_cDocAdqNro,$order));//obtencion de datos
+            $total=\DB::select("EXEC pat.Sp_COUNT_BienBaja ?,?,?",array($value_filtro_cBienDescripcion,$value_filtro_cBienCodigo,$value_filtro_cDocAdqNro));//obtencion de total
+          }
+
+        if($datos) {
+
          foreach ($datos as $d) {
          //  $imagen = $generador->getBarcode($texto, $tipo);
           
@@ -81,6 +79,7 @@ class Bienes extends Controller
                  array_push($datos_c, $dc->iColorId);
               }
              }
+            
               $datos_bienes[]=array(    
                     'RowNumber'=>$d->RowNumber,
                     'etiqueta'=>$base64,                
@@ -99,7 +98,20 @@ class Bienes extends Controller
                     'cBienResolucionBaja'=>$d->cBienResolucionBaja,
                    'dBienAnioFabricacion'=>$d->dBienAnioFabricacion,
                    'cBienObs'=>$d->cBienObs,
-                   // 'iEstadoBienId' =>$d->iEstadoBienId,   
+                   // 'iEstadoBienId' =>$d->iEstadoBienId,
+                   'iPlanConSubCueId'=>$d->iPlanConSubCueId,
+                   'iPlanConMayorId'=>$d->iPlanConMayorId,   
+
+
+                    'iBienVidaUtil'=>$d->iBienVidaUtil,  
+                    'dBienFinVida'=>$d->dBienFinVida,  
+                    'dBienInicioVida'=>$d->dBienInicioVida,  
+                    'nBienValorDepreciacion'=>$d->nBienValorDepreciacion,  
+                    'nBienCuotaSalvamiento'=>$d->nBienCuotaSalvamiento,  
+                    'nBienTasaDepreciacion'=>$d->nBienTasaDepreciacion,  
+                    'nBienDepreciacionAcumulada'=>$d->nBienDepreciacionAcumulada,    
+
+
                     'iTipoId'  =>$d->iTipoId,
                     
                     
@@ -119,12 +131,14 @@ class Bienes extends Controller
                     'cModeloDescripcion'=>$d->cModeloDescripcion,
                     'cMarcaDescripcion'=>$d->cMarcaDescripcion,
 
-                    'iCatalogoId' =>$d->iCatalogoId,   
+                    'iCatalogoId' =>'0',   
 
-                     'colores'=> $datos_c           
+                     'colores'=> $datos_c ,
+                     'iTipoDespId'=>$d->iTipoDespId, 
+                     'bVerificacionEstado'=> $d->bVerificacionEstado         
                 );
            }
-         
+         }
          
      // print_r($datos)
          // $total=45;
@@ -174,7 +188,7 @@ class Bienes extends Controller
                 'iTipoId' => 'required',
                 'iCatalogoId' => 'required',
                 'nBienValor' => 'required',
-                 'colores' => 'required',
+                'colores' => 'required',
             ], 
             [
                
@@ -206,7 +220,7 @@ class Bienes extends Controller
          $xml=$xml."</raiz>";
         $ip = $request->server->get('REMOTE_ADDR');
         try {
-              $queryResult = \DB::select("exec [pat].[Sp_INS_Bien] ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,? ",array(
+              $queryResult = \DB::select("exec [pat].[Sp_INS_Bien] ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ",array(
               $request->iTipoCId,
               $request->iCatalogoId,
               $request->cBienCodigo,$request->cBienDescripcion,$request->nBienValor,$request->cBienSerie,$request->cBienDimension,
@@ -214,9 +228,10 @@ class Bienes extends Controller
               $request->dBienAnioFabricacion,
               $request->iEstadoBienId,
               $request->iTipoId,
-              2019,
+               $request->iYearId,
               $request->iDocAdqId,
               $xml,
+              $request->iPlanConSubCueId,
               20648) );   
             $response = ['validated' => true, 'mensaje' => 'Se guardó  el Bien: '. $queryResult[0]->cBienDescripcion.', exitosamente.', 'queryResult' => $queryResult[0] ];
             $codeResponse = 200;            
@@ -241,9 +256,9 @@ class Bienes extends Controller
                 'cBienSerie' => 'required',
                 'cBienDimension' => 'required',
                 'dBienAnioFabricacion' => 'required',
-                'iEstadoBienId' => 'required',
-                'iDocAdqId' => 'required',
-                'iPlanContId' => 'required',
+               
+             
+                
                 'iTipoId' => 'required',
                 'nBienValor' => 'required',
                  'colores' => 'required',
@@ -253,9 +268,9 @@ class Bienes extends Controller
                       'cBienDescripcion.required' => 'Hubo un problema al obtener la descripcion ',
                 'cBienSerie.required' => 'Hubo un problema al obtener la Serie ',
                 'dBienAnioFabricacion.required' => 'Hubo un problema al obtener año de fabricacion ',
-                'iEstadoBienId.required' => 'Hubo un problema al obtener el ID de estado de bien ',
-                'iDocAdqId.required' => 'Hubo un problema al obtener el ID de documento de adquisición ',
-                'iPlanContId.required' => 'Hubo un problema al obtener el ID de plan contable ',
+                
+            
+               
                 'iTipoId.required' => 'Hubo un problema al obtenerel ID de tipo/modelo/marca ',
                 'nBienValor.required' => 'Hubo un problema al obtener el valor del bien  ',
                 'colores.required' => 'Hubo un problema al obtener colores ',
@@ -281,7 +296,7 @@ class Bienes extends Controller
 
 
         try {
-            $queryResult = \DB::select("exec [pat].[Sp_UPD_Bien] ?, ?, ?,?,?,?,?,?,?,?,?,?,?", array($id,$request->cBienDescripcion,$request->nBienValor,$request->cBienSerie,$request->cBienDimension,$request->_cBienOtrasCaracteristicas,$request->dBienAnioFabricacion,$request->iEstadoBienId,$request->iDocAdqId,$request->iTipoId,$request->iPlanContId, $xml,20648));   
+            $queryResult = \DB::select("exec [pat].[Sp_UPD_Bien] ?, ?, ?,?,?,?,?,?,?,?,?", array($id,$request->cBienDescripcion,$request->nBienValor,$request->cBienSerie,$request->cBienDimension,$request->_cBienOtrasCaracteristicas,$request->dBienAnioFabricacion,$request->iTipoId, $xml,$request->iPlanConSubCueId,20648));   
 
             $response = ['validated' => true, 'mensaje' => 'Se Modifico  el BIen : '. $queryResult[0]->cBienDescripcion.', exitosamente.', 'queryResult' => $queryResult[0] ];
             $codeResponse = 200;            
@@ -295,6 +310,59 @@ class Bienes extends Controller
         return response()->json( $response, $codeResponse );
 
     }
+
+
+      public function baja(Request $request, $id)
+    {
+
+
+            
+        $this->validate(
+            $request, 
+            [
+                'iBienId' => 'required',
+                'cBienDescripcion' => 'required',
+                'dBienFechaBaja' => 'required',
+                'cBienCausalBaja' => 'required',
+                'cBienResolucionBaja' => 'required',
+               
+            ], 
+            [
+                 'iBienId.required' => 'Hubo un problema al obtener Id del Bien ',      
+                 'cBienDescripcion.required' => 'Hubo un problema al obtener la descripcion ',
+                 'dBienFechaBaja.required' => 'Hubo un problema al obtener la fecha de baja ',
+                 'cBienCausalBaja.required' => 'Hubo un problema al obtener el causal de la baja ',
+                 'cBienResolucionBaja.required' => 'Hubo un problema al obtener la resolucion o documento ',
+              
+            ]
+        );
+        $ip = $request->server->get('REMOTE_ADDR');
+       /* $response = ['validated' => true, 'mensaje' => 'Se guardó el Local exitosamente.'];
+            $codeResponse = 200;  */
+
+
+
+
+
+
+
+
+        try {
+            $queryResult = \DB::select("exec [pat].[Sp_UPD_BienBaja] ?, ?, ?,?,?,?", array($id,$request->cBienDescripcion,$request->dBienFechaBaja,$request->cBienCausalBaja,$request->cBienResolucionBaja,20648));   
+
+            $response = ['validated' => true, 'mensaje' => 'Se dio de baja  el BIen : '. $queryResult[0]->cBienDescripcion.', exitosamente.', 'queryResult' => $queryResult[0] ];
+            $codeResponse = 200;            
+        } catch (\QueryException $e) {
+            //return response()->json( $e );
+            $response = ['validated' => true, 'mensaje' => substr($e->errorInfo[2] ?? '', 54), 'code' => $e->getCode(), 'exception' => $e];
+            $codeResponse = 500;
+        }
+        //NO CAPTURAN LOS EERROS SQL DB
+        
+        return response()->json( $response, $codeResponse );
+
+    }
+
 
     public function eliminar($id)
     {

@@ -52,7 +52,7 @@ class Documentos extends Controller
 
      public function getCombo(){
        // $respuesta = DB::select('EXECUTE tram.Sp_SEL_CiclosAcademicosMatricXcEstudCodUniv ?', $data);
-         $datos = \DB::select("EXEC pat.Sp_SEL_Combo_Grupo_generico");
+         $datos = \DB::select("EXEC pat.Sp_SEL_Combo_DocumentosAdquisicion ?", array(2019));
   
           $data = [         
                     'results' =>$datos                                             
@@ -88,7 +88,7 @@ class Documentos extends Controller
 
         $ip = $request->server->get('REMOTE_ADDR');
         try {
-            $queryResult = \DB::select("exec [pat].[Sp_INS_Documento] ?,?,?,?,?,?,? ",array($request->cDocAdqNro,$request->dDocAdqFecha,$request->nDocAdqValor,$request->cDocAdqObs,$request->iFormaAdqId,$request->iTramMovId,20648) );   
+            $queryResult = \DB::select("exec [pat].[Sp_INS_Documento] ?,?,?,?,?,?,?,? ",array($request->cDocAdqNro,$request->dDocAdqFecha,$request->nDocAdqValor,$request->cDocAdqObs,$request->iFormaAdqId,$request->iTramMovId,2019,20648) );   
             $response = ['validated' => true, 'mensaje' => 'Se guardó  el Documento '. $queryResult[0]->cDocAdqNro.', exitosamente.', 'queryResult' => $queryResult[0] ];
             $codeResponse = 200;            
         } catch (\QueryException $e) {;

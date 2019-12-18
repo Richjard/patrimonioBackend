@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-class Planes extends Controller
+class SubCuenta extends Controller
 {
     /**
      * 
@@ -57,7 +57,7 @@ class Planes extends Controller
 
      public function getCombo(){
        // $respuesta = DB::select('EXECUTE tram.Sp_SEL_CiclosAcademicosMatricXcEstudCodUniv ?', $data);
-         $datos = \DB::select("EXEC pat.Sp_SEL_Combo_CuentaMayor");
+         $datos = \DB::select("EXEC pat.Sp_SEL_Combo_CuentaMayor_SubCuenta");
   
           $data = [         
                     'results' =>$datos                                             
